@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BETONIT8002 | Heads or Tails</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css" />
+</head>
+<body class="reward-page theme-reward">
+    <header class="site-header" data-site-header></header>
+
+    <main class="site-main reward-main">
+        <section class="reward-card-shell">
+            <div class="reward-card">
+                <p class="reward-eyebrow">Reward Game</p>
+                <h1>Heads or Tails</h1>
+                <p class="reward-copy">Choose a side and flip the coin. If you win, you earn 5 shared credits. If you lose, your balance stays the same.</p>
+
+                <div class="reward-status-grid">
+                    <div class="reward-status-card">
+                        <span>Player</span>
+                        <strong data-player-name>Guest</strong>
+                    </div>
+                    <div class="reward-status-card">
+                        <span>Credits</span>
+                        <strong data-player-credits>--</strong>
+                    </div>
+                    <div class="reward-status-card">
+                        <span>Win Reward</span>
+                        <strong>+5</strong>
+                    </div>
+                </div>
+
+                <div class="coin-area">
+                    <div id="coin-display" class="coin-display">?</div>
+                    <p id="coin-message" class="coin-message">Pick heads or tails to make your first flip.</p>
+                </div>
+
+                <div class="coin-controls">
+                    <button class="coin-button" data-choice="Heads">Heads</button>
+                    <button class="coin-button" data-choice="Tails">Tails</button>
+                </div>
+
+                <div class="reward-history">
+                    <div class="reward-history-head">
+                        <h2>Recent Flips</h2>
+                        <p id="record-text">Wins: 0 · Losses: 0</p>
+                    </div>
+                    <ul id="flip-history" class="flip-history"></ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        Heads or Tails is reward-only. You never spend credits to play it, and a win adds 5 shared credits to your profile.
+    </footer>
+
+    <style>
+    body.reward-page {
+        margin: 0;
+        min-height: 100vh;
+        background:
+            radial-gradient(circle at top left, rgba(215, 171, 85, 0.16), transparent 28%),
+            linear-gradient(135deg, #fffaf2 0%, #fffdf9 48%, #f8f1e2 100%);
+    }
+
+    .reward-main {
+        padding: 32px 20px 48px;
+    }
+
+    .reward-card-shell {
+        max-width: 860px;
+        margin: 0 auto;
+    }
+
+    .reward-card {
+        background: transparent;
+        padding: 12px 0 0;
+    }
+
+    .reward-eyebrow {
+        margin: 0 0 10px 0;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #b88425;
+    }
+
+    .reward-card h1 {
+        margin: 0;
+        font-family: "Poppins", sans-serif;
+        font-size: clamp(34px, 6vw, 52px);
+        color: #1a2e33;
+    }
+
+    .reward-copy {
+        margin: 12px 0 0 0;
+        max-width: 640px;
+        line-height: 1.7;
+        color: #6e5a3f;
+        font-size: 15px;
+    }
+
+    .reward-status-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 24px;
+    }
+
+    .reward-status-card {
+        padding: 16px;
+        border-radius: 18px;
+        background: #fffaf1;
+        border: 1px solid rgba(184, 139, 52, 0.14);
+    }
+
+    .reward-status-card span {
+        display: block;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #a28967;
+        margin-bottom: 8px;
+    }
+
+    .reward-status-card strong {
+        font-size: 28px;
+        font-family: "Poppins", sans-serif;
+        color: #8f6520;
+    }
+
+    .coin-area {
+        display: grid;
+        justify-items: center;
+        gap: 16px;
+        margin: 34px 0 24px;
+    }
+
+    .coin-display {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #f4de9a 0%, #ddb356 48%, #bb862a 100%);
+        color: #3c2d00;
+        font-family: "Poppins", sans-serif;
+        font-size: 40px;
+        font-weight: 800;
+        box-shadow:
+            inset 0 6px 0 rgba(255, 255, 255, 0.3),
+            0 18px 30px rgba(184, 139, 52, 0.18);
+    }
+
+    .coin-display.flipping {
+        animation: spinCoin 0.8s ease;
+    }
+
+    @keyframes spinCoin {
+        0% { transform: rotateY(0deg) scale(1); }
+        50% { transform: rotateY(540deg) scale(0.88); }
+        100% { transform: rotateY(1080deg) scale(1); }
+    }
+
+    .coin-message {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #5f4b33;
+        text-align: center;
+    }
+
+    .coin-controls {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .coin-button {
+        min-width: 140px;
+        border: none;
+        border-radius: 999px;
+        padding: 14px 20px;
+        background: linear-gradient(135deg, #d7ab55, #b88425);
+        color: #ffffff;
+        font-family: "Nunito", sans-serif;
+        font-size: 16px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .coin-button:hover {
+        background: linear-gradient(135deg, #e0b96f, #c28f31);
+        transform: translateY(-1px);
+    }
+
+    .coin-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .reward-history {
+        margin-top: 28px;
+        padding: 20px;
+        border-radius: 18px;
+        background: #fffbf4;
+        border: 1px solid rgba(184, 139, 52, 0.12);
+    }
+
+    .reward-history-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .reward-history-head h2 {
+        margin: 0;
+        font-family: "Poppins", sans-serif;
+        font-size: 18px;
+        color: #1a2e33;
+    }
+
+    .reward-history-head p {
+        margin: 0;
+        font-size: 13px;
+        color: #6e5a3f;
+        font-weight: 700;
+    }
+
+    .flip-history {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 10px;
+    }
+
+    .flip-history li {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid rgba(184, 139, 52, 0.12);
+        color: #5f4b33;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .flip-history li strong {
+        color: #8f6520;
+    }
+
+    @media (max-width: 720px) {
+        .reward-main {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        .reward-card {
+            padding: 22px;
+        }
+
+        .reward-status-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .reward-history-head {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .flip-history li {
+            flex-direction: column;
+        }
+
+        .coin-button {
+            width: 100%;
+        }
+    }
+    </style>
+
+    <!-- important as it links to outside main js file. -->
+    <script src="../site.js"></script>
+    <script src="hot.js"></script>
+</body>
+</html>

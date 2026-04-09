@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BETONIT8002</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header" data-site-header></header>
+
+  <main class="site-main">
+    <section class="hero">
+      <h1>Welcome back, <span id="welcome-name" data-player-name>Guest</span></h1>
+      <p>This is the main hub for every game on the site. Betting games spend shared credits. Reward games only add credits when you win.</p>
+    </section>
+
+    <section class="games-wrap" id="games">
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">All Games</button>
+        <button class="filter-btn" data-filter="card">Card Games</button>
+        <button class="filter-btn" data-filter="chance">Chance</button>
+        <button class="filter-btn" data-filter="strategy">Strategy</button>
+        <button class="filter-btn" data-filter="betting">Betting</button>
+        <button class="filter-btn" data-filter="reward">Reward</button>
+      </div>
+
+      <div class="games-grid" id="games-grid">
+        <article class="game-card" data-cat="card" data-type="betting" data-ready="true" data-route="BJ/index.html">
+          <div class="game-thumb">
+            <img class="game-thumb-icon" src="svgs/bj.svg" alt="Blackjack icon">
+          </div>
+          <div class="game-info">
+            <div class="game-name">Blackjack</div>
+            <div class="game-cat">Card Game · Betting</div>
+          </div>
+          <span class="game-badge badge-hot">Betting</span>
+        </article>
+
+        <article class="game-card" data-cat="chance" data-type="betting" data-ready="true" data-route="SLOTS/index.html">
+          <div class="game-thumb">
+            <img class="game-thumb-icon" src="svgs/slots.svg" alt="Slots icon">
+          </div>
+          <div class="game-info">
+            <div class="game-name">Slots</div>
+            <div class="game-cat">Chance · Betting</div>
+          </div>
+          <span class="game-badge badge-hot">Betting</span>
+        </article>
+
+        <article class="game-card" data-cat="chance" data-type="reward" data-ready="true" data-route="HOT/index.html">
+          <div class="game-thumb">
+            <img class="game-thumb-icon" src="svgs/Heads.svg" alt="Heads or Tails icon">
+          </div>
+          <div class="game-info">
+            <div class="game-name">Heads or Tails</div>
+            <div class="game-cat">Chance · Reward</div>
+          </div>
+          <span class="game-badge badge-new">Reward</span>
+        </article>
+
+        <article class="game-card" data-cat="chance" data-type="reward" data-ready="true" data-route="HL/index.html">
+          <div class="game-thumb">
+            <img class="game-thumb-icon" src="svgs/HL.svg" alt="Higher or Lower icon">
+          </div>
+          <div class="game-info">
+            <div class="game-name">Higher or Lower</div>
+            <div class="game-cat">Chance · Reward</div>
+          </div>
+          <span class="game-badge badge-new">Reward</span>
+        </article>
+
+        <article class="game-card" data-cat="strategy" data-type="reward" data-ready="true" data-route="TTT/index.html">
+          <div class="game-thumb">
+            <img class="game-thumb-icon" src="svgs/TTT.svg" alt="Tic-Tac-Toe icon">
+          </div>
+          <div class="game-info">
+            <div class="game-name">Tic-Tac-Toe</div>
+            <div class="game-cat">Strategy · Reward</div>
+          </div>
+          <span class="game-badge badge-new">Reward</span>
+        </article>
+
+        <article class="game-card" data-cat="strategy" data-type="reward" data-ready="true" data-route="RPS/index.html">
+          <div class="game-thumb">
+            <img class="game-thumb-icon" src="svgs/rps.svg" alt="Rock Paper Scissors icon">
+          </div>
+          <div class="game-info">
+            <div class="game-name">Rock Paper Scissors</div>
+            <div class="game-cat">Strategy · Reward</div>
+          </div>
+          <span class="game-badge badge-new">Reward</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="leaderboard-section" id="leaderboard">
+      <div class="leaderboard-panel">
+        <div class="leaderboard-head">
+          <div>
+            <h2>Leaderboard</h2>
+            <p>Sorted by shared credits across the full site.</p>
+          </div>
+        </div>
+        <div id="lb-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    Virtual credits only. Blackjack and Slots spend credits when you bet. Heads or Tails and Rock Paper Scissors only reward wins.
+  </footer>
+
+  <div class="signin-overlay" id="signin-overlay">
+    <div class="landing-wrap">
+      <div style="text-align:center">
+        <div class="logo-slash"></div>
+        <div class="logo-name">BETONIT<span>8002</span></div>
+        <!-- changed the "shred leaderboard" is kind of true but also depends on which computer. -->
+        <div class="logo-tag">Shared Name · Shared Credits</div>
+      </div>
+
+      <div class="landing-card signin-card">
+        <h2>Sign in to start playing</h2>
+        <p class="signin-copy">Enter one display name for this browser. That profile carries your credits and leaderboard score across every connected game page.</p>
+
+        <label class="field-lbl" for="player-name">Your Display Name</label>
+        <input type="text" class="text-input" id="player-name" placeholder="e.g. AceKing_99" autocomplete="off">
+
+        <div class="age-row">
+          <input type="checkbox" id="age-check">
+          <label for="age-check">
+            I confirm I am <strong>19 years or older</strong> and agree to play responsibly.
+          </label>
+        </div>
+
+        <button class="btn-enter" id="btn-enter" disabled>Continue to the Hub</button>
+
+        <div class="signin-actions">
+          <button class="btn-cancel hidden-ui" id="btn-signin-close">Close</button>
+        </div>
+      </div>
+
+      <p class="landing-note">For entertainment only &nbsp;|&nbsp; Must be 19+ &nbsp;|&nbsp; Please play responsibly</p>
+    </div>
+  </div>
+
+  <script src="site.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Higher or Lower | BETONIT8002</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="hlstyle.css" />
+  </head>
+  <body class="hl-page theme-reward">
+    <header class="site-header" data-site-header></header>
+
+    <div class="site-main hl-main">
+      <section class="hl-intro">
+        <p class="hl-eyebrow">Reward Game</p>
+        <h1>Higher or Lower</h1>
+        <p class="hl-copy">Guess whether the next album sold more or less than the current one. Each correct guess adds 4 shared credits and wrong guesses do not take any away.</p>
+
+        <div class="hl-status-row">
+          <div class="hl-status-card">
+            <span>Player</span>
+            <strong data-player-name>Guest</strong>
+          </div>
+          <div class="hl-status-card">
+            <span>Credits</span>
+            <strong data-player-credits>--</strong>
+          </div>
+          <div class="hl-status-card">
+            <span>Reward</span>
+            <strong>+4</strong>
+          </div>
+        </div>
+      </section>
+
+      <main class="main">
+        <p class="vs-logo">VS</p>
+        <div class="container">
+          <section class="left-section">
+            <div class="album-card left-card">
+              <!-- album images sourced from albums.js -->
+              <img class="album-cover" src="" alt="Album cover"/>
+              <div class="album-meta">
+                <h2 class="section-label">Current Album</h2>
+                <h1 class="left-heading">Album Name</h1>
+                <p class="left-description">By Artist</p>
+                <h2 class="left-sub-heading">All-time sales: 0</h2>
+              </div>
+            </div>
+            <h3 class="high-score">High Score: 0</h3>
+          </section>
+
+          <section class="right-section">
+            <div class="album-card right-card">
+              <img class="album-cover" src="" alt="Album cover" />
+              <div class="album-meta">
+                <h2 class="section-label">Next Album</h2>
+                <h1 class="right-heading">Next Album</h1>
+                <p class="right-description">By Artist</p>
+              </div>
+            </div>
+            <div class="btn-container">
+              <button class="higher-btn">Higher</button>
+              <button class="lower-btn">Lower</button>
+            </div>
+            <h3 class="score">Score: 0</h3>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <footer class="site-footer">
+      Higher or Lower is reward-only. Correct guesses add 4 shared credits and wrong guesses cost nothing.
+    </footer>
+
+    <script src="albums.js"></script>
+    <!-- important as it links to outside main js file. -->
+    <script src="../site.js"></script>
+    
+    <script src="main.js"></script>
+  </body>
+</html>

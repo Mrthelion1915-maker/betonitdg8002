@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BETONIT8002 | Blackjack</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css" />
+</head>
+<body class="blackjack-page theme-betting">
+    <header class="site-header" data-site-header></header>
+
+    <div id="glasspanel" class="glass">
+        <h1 id="title">BLACKJACK</h1>
+        <p id="blackjackdescription">Blackjack is a betting game. Choose a bet from your shared credits, try to reach 21 without going over, and beat the dealer to win more credits back.</p>
+    </div>
+
+    <div id="result">
+        <img id="resultimage" src="" alt="Round result">
+    </div>
+
+    <div id="deckarea">
+        <div id="deckstack">
+            <div class="decklayer l1"></div>
+            <div class="decklayer l2"></div>
+            <div class="decklayer l3"></div>
+            <div class="decklayer l4"></div>
+            <div class="decklayer l5"></div>
+            <div class="decklayer l6"></div>
+        </div>
+    </div>
+
+    <div id="tablelayout">
+        <div id="dealerlayout">
+            <h2 id="dealertitle">DEALER</h2>
+            <p id="dealertotal"></p>
+            <div id="dealercards"></div>
+        </div>
+
+        <div id="playerlayout">
+            <h3 id="playertitle">PLAYER</h3>
+            <p id="playertotal"></p>
+            <div id="playercards"></div>
+        </div>
+    </div>
+
+    <div class="bottom">
+        <div id="leftspace">
+            <div id="leftbutton">
+                <a href="../index.html" class="button primary">RETURN TO HUB</a>
+            </div>
+        </div>
+
+        <div id="centerbuttons">
+            <label class="betlabel" for="betamount">BET</label>
+            <input type="number" id="betamount" min="1" value="10">
+            <input type="button" value="START NEW ROUND" id="startnewround" class="button primary">
+            <input type="button" value="HIT" id="hit" disabled class="button gold">
+            <input type="button" value="STAND" id="stand" disabled class="button red">
+        </div>
+
+        <div id="rightspace">
+            <div id="scorepanel" class="glass">
+                <p id="playerlabel">Player: <span data-player-name>Guest</span></p>
+                <p id="scoreboard"></p>
+                <p id="creditsdisplay"></p>
+                <p id="roundmessage">Choose a bet and start a round.</p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    body.blackjack-page {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        margin: 0;
+        background-image: url("../imgs/bj/Images/BJ table (smaller).png");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        padding: 0;
+        overflow: hidden;
+        font-family: "Nunito", sans-serif;
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 5vh;
+        color: #E8D080;
+    }
+
+    #deckarea {
+        position: fixed;
+        top: 17vh;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    #deckstack {
+        position: relative;
+        width: 5.7vw;
+        aspect-ratio: 2.5 / 3.5;
+    }
+
+    .decklayer {
+        position: absolute;
+        inset: 0;
+        border-radius: 0.4vw;
+        background-image: url("../imgs/bj/CardImgs/backcard.png");
+        background-size: cover;
+        background-position: center;
+        box-shadow: 0 0.4vmin 1vmin rgba(0, 0, 0, 0.4);
+        opacity: 1;
+        will-change: transform, opacity;
+    }
+
+    .l1 { transform: translate(0, 0); z-index: 6; }
+    .l2 { transform: translate(-0.08vw, 0.08vh); z-index: 5; }
+    .l3 { transform: translate(-0.16vw, 0.16vh); z-index: 4; }
+    .l4 { transform: translate(-0.24vw, 0.24vh); z-index: 3; }
+    .l5 { transform: translate(-0.32vw, 0.32vh); z-index: 2; }
+    .l6 { transform: translate(-0.4vw, 0.4vh); z-index: 1; }
+
+    #title, #dealertitle, #playertitle {
+        transition: 0.2s;
+    }
+
+    #blackjackdescription {
+        font-size: 2vmin;
+        margin: 1vh 0 0 0;
+        color: white;
+        text-align: justify;
+    }
+
+    #result {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #resultimage {
+        width: min(38vmin, 320px);
+        height: auto;
+        opacity: 0;
+        transform: scale(0.7);
+    }
+
+    #result.show #resultimage {
+        animation: resultPopup 0.55s cubic-bezier(.2,.9,.2,1) forwards;
+    }
+
+    @keyframes resultPopup {
+        0% {
+            opacity: 0;
+            transform: scale(0.7);
+        }
+
+        100% {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+    }
+
+    #tablelayout {
+        margin-top: 26vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 28vw;
+    }
+
+    #dealerlayout,
+    #playerlayout {
+        width: 10vw;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    h2, h3 {
+        margin: 0 0 0.5vh 0;
+        font-size: 3vh;
+        color: #E8D080;
+    }
+
+    #dealertotal,
+    #playertotal {
+        font-size: 2vmin;
+        text-align: center;
+        margin: 0 0 2vh 0;
+        color: white;
+    }
+
+    #playercards,
+    #dealercards {
+        display: grid;
+        grid-template-columns: repeat(4, 6vw);
+        justify-content: center;
+        gap: 0.4vw;
+        width: 20vw;
+    }
+
+    #playercards img,
+    #dealercards img {
+        width: 5.7vw;
+        height: auto;
+        box-shadow: 0 0.6vmin 1.5vmin rgba(0, 0, 0, 0.5);
+    }
+
+    .bottom {
+        display: flex;
+        align-items: flex-end;
+        margin-top: auto;
+        padding: 0 4vw 2vh 4vw;
+    }
+
+    #leftspace,
+    #rightspace {
+        width: 28vmin;
+        display: flex;
+        align-items: flex-end;
+    }
+
+    #leftspace {
+        justify-content: flex-start;
+    }
+
+    #rightspace {
+        justify-content: flex-end;
+    }
+
+    #centerbuttons {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4vw;
+        flex-wrap: wrap;
+    }
+
+    #leftbutton {
+        width: fit-content;
+    }
+
+    #scoreboard,
+    #creditsdisplay,
+    #playerlabel,
+    #roundmessage {
+        margin: 0;
+        white-space: pre-line;
+        color: white;
+    }
+
+    #playerlabel {
+        font-size: 2vmin;
+        font-weight: 700;
+        margin-bottom: 1vh;
+    }
+
+    #scoreboard {
+        font-size: 1.9vmin;
+    }
+
+    #creditsdisplay {
+        margin: 1vh 0 0 0;
+        font-size: 2.3vmin;
+        font-weight: bold;
+        color: #E8D080;
+        line-height: 1.4;
+    }
+
+    #roundmessage {
+        margin-top: 1vh;
+        font-size: 1.9vmin;
+        line-height: 1.5;
+    }
+
+    .glass {
+        border-radius: 2vmin;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(1vmin) saturate(150%);
+        -webkit-backdrop-filter: blur(1vmin) saturate(150%);
+        border: 0.15vmin solid rgba(255, 255, 255, 0.1);
+        box-shadow:
+            0 1.5vmin 4vmin rgba(0, 0, 0, 0.4),
+            inset 0 0.1vmin 0 rgba(255, 255, 255, 0.1);
+    }
+
+    #glasspanel {
+        position: absolute;
+        top: 84px;
+        left: 10px;
+        width: 34vmin;
+        padding: 2vmin;
+        margin: 1vmin;
+    }
+
+    #scorepanel {
+        width: 23vmin;
+        padding: 2vmin;
+    }
+
+    .button {
+        padding: 1vmin 1.2vmin;
+        border-radius: 1vmin;
+        font-size: 1.5vmin;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        border: 0.15vmin solid rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow:
+            0 0.4vmin 1vmin rgba(0, 0, 0, 0.6),
+            inset 0 0.1vmin 0 rgba(255, 255, 255, 0.1);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .button.gold {
+        background: linear-gradient(135deg, #E8D080, #9C8332);
+        color: black;
+    }
+
+    .button.gold:not(:disabled):hover {
+        transform: translateY(-0.2vmin);
+        box-shadow:
+            0 0 1.2vmin rgba(232, 208, 128, 0.9),
+            0 0.4vmin 1vmin rgba(0, 0, 0, 0.6);
+    }
+
+    .button.red {
+        background: linear-gradient(135deg, #EB5454, #8F1F1F);
+        color: white;
+    }
+
+    .button.red:not(:disabled):hover {
+        transform: translateY(-0.2vmin);
+        box-shadow:
+            0 0 1.2vmin rgba(235, 84, 84, 1),
+            0 0.4vmin 1vmin rgba(0, 0, 0, 0.6);
+    }
+
+    .button.primary {
+        background: linear-gradient(135deg, #1a1a1a, #000);
+        color: #E8D080;
+        border: 0.15vmin solid rgba(232, 208, 128, 0.3);
+    }
+
+    .button.primary:not(:disabled):hover {
+        transform: translateY(-0.2vmin);
+        box-shadow:
+            0 0 1vmin rgba(232, 208, 128, 0.5),
+            0 0.4vmin 1vmin rgba(0, 0, 0, 0.6);
+    }
+
+    .button:disabled {
+        background: #111 !important;
+        color: #555 !important;
+        border: 0.15vmin solid #333;
+        transform: none;
+        box-shadow: none;
+        opacity: 1;
+        filter: grayscale(80%);
+    }
+
+    #betamount {
+        width: 10vmin;
+        padding: 1vmin;
+        border-radius: 1vmin;
+        border: 0.15vmin solid rgba(232, 208, 128, 0.4);
+        background: rgba(0, 0, 0, 0.65);
+        color: white;
+        font-size: 1.8vmin;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .betlabel {
+        color: #E8D080;
+        font-size: 1.7vmin;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+    }
+
+    @media (max-width: 1100px) {
+        body.blackjack-page {
+            overflow: auto;
+        }
+
+        #glasspanel {
+            position: relative;
+            top: auto;
+            left: auto;
+            width: auto;
+            margin: 90px 16px 0;
+        }
+
+        #deckarea,
+        #result {
+            position: static;
+            transform: none;
+            margin: 16px auto 0;
+        }
+
+        #tablelayout {
+            margin-top: 16px;
+            flex-direction: column;
+            gap: 24px;
+            align-items: center;
+        }
+
+        #dealerlayout,
+        #playerlayout,
+        #playercards,
+        #dealercards {
+            width: auto;
+        }
+
+        #playercards,
+        #dealercards {
+            grid-template-columns: repeat(4, 72px);
+        }
+
+        #playercards img,
+        #dealercards img {
+            width: 68px;
+        }
+
+        .bottom {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px;
+            padding: 24px 16px;
+        }
+
+        #leftspace,
+        #rightspace {
+            width: auto;
+            justify-content: center;
+        }
+    }
+    </style>
+
+    <!-- important as it links to outside main js file. -->
+    <script src="../site.js"></script>
+    <script src="bj.js"></script>
+</body>
+</html>

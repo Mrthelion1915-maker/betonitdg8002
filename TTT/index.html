@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe | BETONIT8002</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="ttt-page theme-reward">
+    <header class="site-header" data-site-header></header>
+
+    <main class="site-main ttt-main">
+        <section class="ttt-intro">
+            <p class="ttt-eyebrow">Reward Game</p>
+            <h1>Tic-Tac-Toe</h1>
+            <p class="ttt-copy">Play against the computer as X. Winning a round adds 5 shared credits, and losses or ties do not remove any credits from your profile.</p>
+
+            <div class="ttt-status-row">
+                <div class="ttt-status-card">
+                    <span>Player</span>
+                    <strong data-player-name>Guest</strong>
+                </div>
+                <div class="ttt-status-card">
+                    <span>Credits</span>
+                    <strong data-player-credits>--</strong>
+                </div>
+                <div class="ttt-status-card">
+                    <span>Reward</span>
+                    <strong>+5</strong>
+                </div>
+            </div>
+        </section>
+
+        <div class="game-container">
+            <h2 class="game-title">Classic Match</h2>
+            <div class="status" id="status">Your turn: X</div>
+            <div class="board" id="board"></div>
+            <div class="controls">
+                <button id="resetButton">Restart</button>
+                <div id="scoreboard"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        Tic-Tac-Toe is reward-only. Wins add 5 shared credits and losses or ties do not subtract from your balance.
+    </footer>
+
+ <!-- important as it links to outside main js file. -->
+    <script src="../site.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
