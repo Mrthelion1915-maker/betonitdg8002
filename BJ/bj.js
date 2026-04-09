@@ -68,7 +68,6 @@
 	var playerWins = 0;
 	var dealerWins = 0;
 	var ties = 0;
-	var gamesPlayed = 0;
 				
     var isAnimating = false; ///use to stop button spamming causing card to add rapidly
 				// const originalcredits = 1000;
@@ -98,12 +97,10 @@
 	    		var startnewround = document.querySelector("#startnewround");
 	    		var hit = document.querySelector("#hit");
 	    		var stand = document.querySelector("#stand");
-	    		var resetscore = document.querySelector("#resetscore");
 
 	    		startnewround.addEventListener("click", deal);
 	    		hit.addEventListener("click", hitCard);
 	    		stand.addEventListener("click", standCard);
-	    		resetscore.addEventListener("click", resetScore);
 	    		updateScore();
 	    		updateCredits();
 
@@ -491,39 +488,8 @@
 				    }
 				}
 
-				function resetScore(){
-					isAnimating = false;
-					gamesPlayed = 0;
-					playerWins = 0;
-					dealerWins = 0;
-					ties = 0;
-					playerdeck = [];
-					dealerdeck = [];
-					credits = originalcredits;
-					updateScore();
-					updateCredits();
-					clearResultImage();
-					document.querySelector("#startnewround").disabled = false;
-					document.querySelector("#playercards").innerHTML = "";
-					document.querySelector("#dealercards").innerHTML = "";
-					document.querySelector("#hit").disabled = true;
-					document.querySelector("#stand").disabled = true;
-					document.querySelector("#resetscore").disabled = true;
-					
-					var updatePlayerTotal = document.querySelector("#playertotal");
-					updatePlayerTotal.textContent = "";
-					var updateDealerTotal = document.querySelector("#dealertotal");
-					updateDealerTotal.textContent = "";
-
-				}
 
 				function gameOver(){
-					gamesPlayed = gamesPlayed + 1;
-					if (gamesPlayed > 0){
-						document.querySelector("#resetscore").disabled = false;
-					}
-					isAnimating = false;
-
 					if (credits > 0){
 				        document.querySelector("#startnewround").disabled = false;
 				    }
