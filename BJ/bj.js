@@ -1,11 +1,16 @@
 (function () {
+    // Shared Credit System.
     var site = window.BetonitSite;
+    // Carries out the credits.
     var sharedProfile = site ? site.requireCurrentUser({ nextPage: "bj.html" }) : null;
 
     if (!site || !sharedProfile) {
         return;
     }
 
+
+    ///____________________________result images____________________________///
+    // Path to Images 
     var RESULT_IMAGES = {
         playerBlackjack: "../imgs/bj/Images/blackjackplayer.png",
         dealerBlackjack: "../imgs/bj/Images/blackjackdealer.png",
@@ -16,455 +21,579 @@
         push: "../imgs/bj/Images/tie.png",
         noCredits: "../imgs/bj/Images/nocredits.png"
     };
+    
+    // Constant Values to make the suits and the card numbers visible to the computer
+    const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+	const suits = ["spades", "hearts", "diamonds", "clubs"];
 
-    var SUITS = ["clubs", "diamonds", "hearts", "spades"];
-    var RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+				const originalcredits = sharedProfile.credits;
+    var credits = originalcredits;
+    var blackjackPlayerImage = RESULT_IMAGES.playerBlackjack;
+    var blackjackDealerImage = RESULT_IMAGES.dealerBlackjack;
+    var playerWinsImage = RESULT_IMAGES.playerWin;
+    var dealerWinsImage = RESULT_IMAGES.dealerWin;
+    var playerBustImage = RESULT_IMAGES.playerBust;
+    var dealerBustImage = RESULT_IMAGES.dealerBust;
+    var tieImage = RESULT_IMAGES.push;
+    var noCreditsImage = RESULT_IMAGES.noCredits;
 
-    var dom = {
-        startRoundButton: document.getElementById("startnewround"),
-        hitButton: document.getElementById("hit"),
-        standButton: document.getElementById("stand"),
-        betInput: document.getElementById("betamount"),
-        dealerCards: document.getElementById("dealercards"),
-        playerCards: document.getElementById("playercards"),
-        dealerTotal: document.getElementById("dealertotal"),
-        playerTotal: document.getElementById("playertotal"),
-        scoreboard: document.getElementById("scoreboard"),
-        creditsDisplay: document.getElementById("creditsdisplay"),
-        roundMessage: document.getElementById("roundmessage"),
-        resultBox: document.getElementById("result"),
-        resultImage: document.getElementById("resultimage")
-    };
-
-    var state = {
-        credits: sharedProfile.credits,
-        currentUser: sharedProfile.name,
-        currentBet: 0,
-        deck: [],
-        playerHand: [],
-        dealerHand: [],
-        roundActive: false,
-        revealDealer: false,
-        stats: {
-            wins: sharedProfile.stats.blackjack.wins,
-            losses: sharedProfile.stats.blackjack.losses,
-            pushes: sharedProfile.stats.blackjack.pushes
-        }
-    };
-
-    dom.startRoundButton.addEventListener("click", startRound);
-    dom.hitButton.addEventListener("click", hitPlayer);
-    dom.standButton.addEventListener("click", standPlayer);
-    dom.betInput.addEventListener("input", clampBetInput);
-    window.addEventListener("storage", syncFromStorage);
-    window.addEventListener("pageshow", syncFromStorage);
-    window.addEventListener("focus", syncFromStorage);
-    document.addEventListener("visibilitychange", syncFromVisibility);
-
-    updateDisplay();
-    clampBetInput();
-
-    function applySharedProfile(profile) {
-        if (!profile) {
-            return;
-        }
-
-        state.credits = profile.credits;
-        state.currentUser = profile.name;
-        state.stats.wins = profile.stats.blackjack.wins;
-        state.stats.losses = profile.stats.blackjack.losses;
-        state.stats.pushes = profile.stats.blackjack.pushes;
+    function syncCreditsFromSystem() {
+        const currentUser = site.getCurrentUser();
+        credits = currentUser ? currentUser.credits : 0;
     }
 
-    function syncFromStorage() {
-        if (state.roundActive) {
-            return;
-        }
-
-        var latestProfile = site.getCurrentUser();
-
-        if (!latestProfile) {
-            return;
-        }
-
-        applySharedProfile(latestProfile);
-        clampBetInput();
-        updateDisplay();
-    }
-
-    function syncFromVisibility() {
-        if (document.visibilityState === "visible") {
-            syncFromStorage();
-        }
-    }
-
-    function createDeck() {
-        var deck = [];
-        var rankIndex = 0;
-        var suitIndex = 0;
-
-        for (suitIndex = 0; suitIndex < SUITS.length; suitIndex = suitIndex + 1) {
-            for (rankIndex = 0; rankIndex < RANKS.length; rankIndex = rankIndex + 1) {
-                deck.push({
-                    rank: RANKS[rankIndex],
-                    suit: SUITS[suitIndex],
-                    image: "../imgs/bj/CardImgs/" + RANKS[rankIndex] + SUITS[suitIndex] + ".png"
-                });
-            }
-        }
-
-        return shuffle(deck);
-    }
-
-    function shuffle(deck) {
-        var copy = deck.slice();
-        var index = 0;
-        var swapIndex = 0;
-        var temp = null;
-
-        for (index = copy.length - 1; index > 0; index = index - 1) {
-            swapIndex = Math.floor(Math.random() * (index + 1));
-            temp = copy[index];
-            copy[index] = copy[swapIndex];
-            copy[swapIndex] = temp;
-        }
-
-        return copy;
-    }
-
-    function drawCard() {
-        return state.deck.pop();
-    }
-
-    function getCardValue(card) {
-        if (card.rank === "A") {
-            return 11;
-        }
-
-        if (card.rank === "K" || card.rank === "Q" || card.rank === "J") {
-            return 10;
-        }
-
-        return parseInt(card.rank, 10);
-    }
-
-    function getHandTotal(hand) {
-        var total = 0;
-        var aces = 0;
-        var index = 0;
-
-        for (index = 0; index < hand.length; index = index + 1) {
-            total = total + getCardValue(hand[index]);
-
-            if (hand[index].rank === "A") {
-                aces = aces + 1;
-            }
-        }
-
-        while (total > 21 && aces > 0) {
-            total = total - 10;
-            aces = aces - 1;
-        }
-
-        return total;
-    }
-
-    function renderHands() {
-        renderHand(dom.playerCards, state.playerHand, false);
-        renderHand(dom.dealerCards, state.dealerHand, !state.revealDealer && state.roundActive);
-
-        dom.playerTotal.textContent = state.playerHand.length > 0 ? "Total: " + getHandTotal(state.playerHand) : "";
-
-        if (state.dealerHand.length === 0) {
-            dom.dealerTotal.textContent = "";
-        }
-        else if (!state.revealDealer && state.roundActive) {
-            dom.dealerTotal.textContent = "Showing: " + getCardValue(state.dealerHand[0]);
-        }
-        else {
-            dom.dealerTotal.textContent = "Total: " + getHandTotal(state.dealerHand);
-        }
-    }
-
-    function renderHand(container, hand, hideSecondCard) {
-        var html = "";
-        var index = 0;
-        var card = null;
-
-        for (index = 0; index < hand.length; index = index + 1) {
-            card = hand[index];
-
-            if (hideSecondCard && index === 1) {
-                html = html + '<img src="../imgs/bj/CardImgs/backcard.png" alt="Hidden card">';
-            }
-            else {
-                html = html + '<img src="' + card.image + '" alt="' + card.rank + " of " + card.suit + '">';
-            }
-        }
-
-        container.innerHTML = html;
-    }
-
-    function updateDisplay() {
-        renderHands();
-        dom.scoreboard.textContent =
-            "Wins: " + state.stats.wins + "\n" +
-            "Losses: " + state.stats.losses + "\n" +
-            "Pushes: " + state.stats.pushes;
-        dom.creditsDisplay.textContent =
-            "Credits: " + state.credits + "\n" +
-            "Current Bet: " + getSelectedBet();
-        dom.betInput.max = Math.max(state.credits, 1);
-        site.refreshUi();
-    }
-
-    function setRoundMessage(message) {
-        dom.roundMessage.textContent = message;
-    }
-
-    function clampBetInput() {
-        var selectedBet = parseInt(dom.betInput.value, 10);
-
-        if (state.credits <= 0) {
-            dom.betInput.value = 0;
-            return;
-        }
-
-        if (isNaN(selectedBet) || selectedBet < 1) {
-            selectedBet = 1;
-        }
-
-        if (selectedBet > state.credits) {
-            selectedBet = state.credits;
-        }
-
-        dom.betInput.value = selectedBet;
-        updateDisplay();
-    }
-
-    function getSelectedBet() {
-        var selectedBet = parseInt(dom.betInput.value, 10);
-
-        if (isNaN(selectedBet) || selectedBet < 1) {
-            return 0;
-        }
-
-        return selectedBet;
-    }
-
-    function setControlsForRound(isRoundActive) {
-        state.roundActive = isRoundActive;
-        dom.startRoundButton.disabled = isRoundActive;
-        dom.hitButton.disabled = !isRoundActive;
-        dom.standButton.disabled = !isRoundActive;
-        dom.betInput.disabled = isRoundActive || state.credits <= 0;
-    }
-
-    function saveCreditsOnly(betAmount) {
-        var roundStarted = false;
-        var updatedProfile = site.updateCurrentUser(function (profile) {
-            if (betAmount <= 0 || betAmount > profile.credits) {
-                return profile;
-            }
-
-            profile.credits = profile.credits - betAmount;
-            profile.lastGame = "Blackjack";
-            roundStarted = true;
-            return profile;
-        });
+    function changeCredits(amount) {
+        const updatedProfile = site.changeCredits(amount);
 
         if (updatedProfile) {
-            applySharedProfile(updatedProfile);
+            credits = updatedProfile.credits;
+        } else {
+            credits = Math.max(0, credits + amount);
         }
 
-        return roundStarted;
+        updateCredits();
+        return updatedProfile;
     }
 
-    function saveFinishedRound(resultType) {
-        var updatedProfile = site.updateCurrentUser(function (profile) {
-            profile.lastGame = "Blackjack";
 
-            if (resultType === "win") {
-                profile.credits = profile.credits + (state.currentBet * 2);
-                profile.stats.blackjack.wins = profile.stats.blackjack.wins + 1;
-            }
+    ///____________________________Define Variable____________________________///
+				
+	// 2nd Card of dealer (Hidden Card)			
+	const dealerhiddencard = "../imgs/bj/CardImgs/backcard.png";
 
-            if (resultType === "loss") {
-                profile.stats.blackjack.losses = profile.stats.blackjack.losses + 1;
-            }
+	var deck = []; ///define a deck of 52 cards, not player deck or dealer deck
+	var playerdeck = [];
+	var dealerdeck = [];
 
-            if (resultType === "push") {
-                profile.credits = profile.credits + state.currentBet;
-                profile.stats.blackjack.pushes = profile.stats.blackjack.pushes + 1;
-            }
+	var playerWins = 0;
+	var dealerWins = 0;
+	var ties = 0;
+	var gamesPlayed = 0;
+				
+    var isAnimating = false; ///use to stop button spamming causing card to add rapidly
+				// const originalcredits = 1000;
+				// var credits = originalcredits;
+				var wincredit = 30;
+				var losecredit = -30;
+				var tiecredit = 15;
 
-            return profile;
-        });
+///____________________________glowing effect____________________________///
+				var goldGlow =
+				  "drop-shadow(0 0 1vmin rgba(232, 208, 128, 1)) " +
+				  "drop-shadow(0 0 3vmin rgba(232, 208, 128, 0.7)) " +
+				  "drop-shadow(0 0 6vmin rgba(232, 208, 128, 0.4))";
 
-        if (updatedProfile) {
-            applySharedProfile(updatedProfile);
-        }
-    }
+				var redGlow =
+				  "drop-shadow(0 0 1vmin rgba(235, 84, 84, 1)) " +
+				  "drop-shadow(0 0 3vmin rgba(235, 84, 84, 0.7)) " +
+				  "drop-shadow(0 0 6vmin rgba(235, 84, 84, 0.4))";
 
-    function startRound() {
-        var betAmount = getSelectedBet();
-        var playerTotal = 0;
-        var dealerTotal = 0;
-        var latestProfile = null;
-        var roundStarted = false;
+				var silverGlow =
+				  "drop-shadow(0 0 1vmin rgba(161, 161, 161, 1)) " +
+				  "drop-shadow(0 0 3vmin rgba(161, 161, 161, 0.7)) " +
+				  "drop-shadow(0 0 6vmin rgba(161, 161, 161, 0.4))";
 
-        if (state.roundActive) {
-            return;
-        }
+	///____________________________need at least 7 actions____________________________///
 
-        latestProfile = site.getCurrentUser();
+	    		var startnewround = document.querySelector("#startnewround");
+	    		var hit = document.querySelector("#hit");
+	    		var stand = document.querySelector("#stand");
+	    		var resetscore = document.querySelector("#resetscore");
 
-        if (latestProfile) {
-            applySharedProfile(latestProfile);
-            clampBetInput();
-            betAmount = getSelectedBet();
-        }
+	    		startnewround.addEventListener("click", deal);
+	    		hit.addEventListener("click", hitCard);
+	    		stand.addEventListener("click", standCard);
+	    		resetscore.addEventListener("click", resetScore);
+	    		updateScore();
+	    		updateCredits();
 
-        if (state.credits <= 0 || betAmount <= 0) {
-            showResultImage("noCredits");
-            setRoundMessage("You have no credits left here. Use a reward game from the hub to earn more.");
-            updateDisplay();
-            return;
-        }
+	    		var titleGlow = document.querySelector("#title");
+				var h2Glow = document.querySelector("#dealertitle");
+				var h3Glow = document.querySelector("#playertitle");
 
-        if (betAmount > state.credits) {
-            setRoundMessage("That bet is higher than your current credits.");
-            return;
-        }
+				titleGlow.addEventListener("mouseover", textWhenHover);
+				titleGlow.addEventListener("mouseout", textReset);
 
-        roundStarted = saveCreditsOnly(betAmount);
+				h2Glow.addEventListener("mouseover", textWhenHover);
+				h2Glow.addEventListener("mouseout", textReset);
 
-        if (!roundStarted) {
-            state.currentBet = 0;
-            setRoundMessage("That bet is higher than your current credits.");
-            clampBetInput();
-            updateDisplay();
-            return;
-        }
+				h3Glow.addEventListener("mouseover", textWhenHover);
+				h3Glow.addEventListener("mouseout", textReset);
 
-        state.currentBet = betAmount;
-        state.deck = createDeck();
-        state.playerHand = [drawCard(), drawCard()];
-        state.dealerHand = [drawCard(), drawCard()];
-        state.revealDealer = false;
+	///____________________________define function____________________________///
 
-        setControlsForRound(true);
-        renderHands();
-        updateDisplay();
-        setRoundMessage("Round started. Hit for another card or stand to hold.");
+	  			function buildDeck(){
+					for (let i = 0; i < values.length; i++) {
+		  				for (let j = 0; j < suits.length; j++) {
+						    let fulldeck = {
+						      value: values[i],
+						      suit: suits[j],
+						      image: "../imgs/bj/CardImgs/" + values[i] + suits[j] + ".png"
+						    }
 
-        playerTotal = getHandTotal(state.playerHand);
-        dealerTotal = getHandTotal(state.dealerHand);
+		    				deck.push(fulldeck); ///add card to array, doesn't replace the first element
+						}
+					}
+	    		}
 
-        if (playerTotal === 21 && dealerTotal === 21) {
-            finishRound("push", "Both sides hit blackjack. Bet returned.", "push");
-            return;
-        }
+	  			function shuffle(){
+	  				for (let i = deck.length - 1; i > 0; i--) {
+	    				let j = Math.floor(Math.random() * (i + 1)); ///math.random generate random decimal number between 0 to 1. Then 
 
-        if (playerTotal === 21) {
-            finishRound("win", "Blackjack! You win this round.", "playerBlackjack");
-            return;
-        }
+	    				let temp = deck[i]; ///create a temp variable where deck[i] is stored
+	  					deck[i] = deck[j]; /// deck[j] to replace the position of deck[i]
+	  			 		deck[j] = temp; ///deck[j] is replaced by the value of deck[i] store in temp. Basically these 3 lines swap i and j around
+	  				}
+				}
 
-        if (dealerTotal === 21) {
-            finishRound("loss", "Dealer blackjack. You lose this round.", "dealerBlackjack");
-        }
-    }
 
-    function hitPlayer() {
-        var playerTotal = 0;
+				function deal(){
 
-        if (!state.roundActive) {
-            return;
-        }
+					if (!checkCredits()) return; ///check if user has enough credit
+					credits = credits - 10; ///cost to play
+					updateCredits();
 
-        state.playerHand.push(drawCard());
-        renderHands();
-        updateDisplay();
+					// if (isAnimating) return;
+				    // isAnimating = true;
 
-        playerTotal = getHandTotal(state.playerHand);
+                    var bet = parseInt(document.querySelector("#betamount").value);
+					wincredit = bet * 3;
+					losecredit = -bet * 3;
+					tiecredit = Math.floor(bet * 1.5);
 
-        if (playerTotal > 21) {
-            finishRound("loss", "Player busts. Dealer wins.", "playerBust");
-            return;
-        }
+					if (bet > credits || credits < 0) {
 
-        if (playerTotal === 21) {
-            setRoundMessage("You hit 21. Stand to make the dealer play.");
-            return;
-        }
+						showResultImage(noCreditsImage,"lose");
+						document.querySelector("#startnewround").disabled = true;
+						return;
+					}
 
-        setRoundMessage("Player total is " + playerTotal + ". Hit again or stand.");
-    }
+					changeCredits(-bet); ///cost to play
+					if (isAnimating) return;
+				    isAnimating = true;
 
-    function standPlayer() {
-        var dealerTotal = 0;
-        var playerTotal = 0;
 
-        if (!state.roundActive) {
-            return;
-        }
+				    document.querySelector("#startnewround").disabled = true;
+				    document.querySelector("#hit").disabled = true;
+				    document.querySelector("#stand").disabled = true;
 
-        state.revealDealer = true;
+					///reset last game's player and dealer deck
+					playerdeck = [];
+					dealerdeck = [];
 
-        while (getHandTotal(state.dealerHand) < 17) {
-            state.dealerHand.push(drawCard());
-        }
+					///clear all card images from the screen and result(UI)
+					clearResultImage();
+					document.querySelector("#playercards").innerHTML = "";
+					document.querySelector("#dealercards").innerHTML = "";
+					document.querySelector("#playertotal").textContent = "";
+	    			document.querySelector("#dealertotal").textContent = "";
 
-        dealerTotal = getHandTotal(state.dealerHand);
-        playerTotal = getHandTotal(state.playerHand);
-        renderHands();
-        updateDisplay();
 
-        if (dealerTotal > 21) {
-            finishRound("win", "Dealer busts. You win this round.", "dealerBust");
-            return;
-        }
+					//rebuild full deck
+					deck = [];
+					buildDeck();
 
-        if (playerTotal > dealerTotal) {
-            finishRound("win", "Player beats the dealer.", "playerWin");
-            return;
-        }
+					///shuffle deck with math.random
+					shuffle();
+					shuffleAnimation();
 
-        if (playerTotal < dealerTotal) {
-            finishRound("loss", "Dealer beats the player.", "dealerWin");
-            return;
-        }
+					var playerCardPlacement = document.querySelector("#playercards");
+					var dealerCardPlacement = document.querySelector("#dealercards");
 
-        finishRound("push", "Push. Your bet is returned.", "push");
-    }
 
-    function finishRound(resultType, message, imageKey) {
-        state.revealDealer = true;
+					///draw cards
+					var playercard1 = deck.pop(); ///use pop because it takes the element from the array and remove it, to prevent duplication
+					var dealercard1 = deck.pop();
+					var playercard2 = deck.pop();	
+					var dealercard2 = deck.pop();				
+					
 
-        saveFinishedRound(resultType);
-        setControlsForRound(false);
-        renderHands();
-        updateDisplay();
-        setRoundMessage(message);
-        showResultImage(imageKey);
-        clampBetInput();
+					///deal card animation
+					setTimeout(() => {
+				        playerdeck.push(playercard1);
+				        displayCard(playercard1, playerCardPlacement);
+				        document.querySelector("#playertotal").textContent = "Total: " + getTotal(playerdeck);
+				    }, 700);
 
-        if (state.credits <= 0) {
-            setRoundMessage(message + " You are out of credits, so head to a reward game to build your balance back up.");
-        }
-    }
+				    setTimeout(() => {
+				    	dealerdeck.push(dealercard1);
+				        displayCard(dealercard1, dealerCardPlacement);
+				        document.querySelector("#dealertotal").textContent = "Total: " + getTotal(dealerdeck);
+				    }, 1000);
 
-    function showResultImage(imageKey) {
-        dom.resultImage.src = RESULT_IMAGES[imageKey];
-        dom.resultBox.classList.remove("show");
+				    setTimeout(() => {
+				    	playerdeck.push(playercard2);
+				        displayCard(playercard2, playerCardPlacement);
+				        document.querySelector("#playertotal").textContent = "Total: " + getTotal(playerdeck);
+				    }, 1300);
 
-        void dom.resultBox.offsetWidth;
+				    setTimeout(() => {///this delay mimics the dealer checking his card
+				    	dealerdeck.push(dealercard2);
+				        displayCard(dealercard2, dealerCardPlacement, true);
 
-        dom.resultBox.classList.add("show");
 
-        window.setTimeout(function () {
-            dom.resultBox.classList.remove("show");
-        }, 1600);
-    }
-})();
+						///check Blackjack on deal
+				        setTimeout(() => {
+					        if (isBlackjack(playerdeck) || isBlackjack(dealerdeck)) {
+					            revealDealerCard();
+					            updateScore();
+					            document.querySelector("#dealertotal").textContent = "Total: " + getTotal(dealerdeck);
+
+					            setTimeout(checkBlackjackOnDeal, 1200);///this delays the result popping up
+					        } else {
+					            gameStart();
+					        }
+					    }, 500);
+				    }, 1600);				
+					
+				}
+
+				function displayCard(cardinfo,cardplacement, hidden = false){
+					var cardImage = document.createElement("img");///createElement means create image element in javascript
+					cardImage.src = cardinfo.image;
+
+					if (hidden) {
+				        cardImage.src = dealerhiddencard;
+				        cardImage.dataset.realImage = cardinfo.image;
+				        cardImage.dataset.hidden = "true";
+				    } else {
+				        cardImage.src = cardinfo.image;
+				    }
+
+
+					if (cardplacement.id === "playercards") {
+				        cardImage.classList.add("cardplayer");
+				    } else {
+				        cardImage.classList.add("carddealer");
+				    }
+
+					
+					cardplacement.appendChild(cardImage);///appendChild means putting the cardimage inside the div with id playercards
+
+								
+					cardImage.offsetHeight; ///force browser to apply the initial state first
+					cardImage.classList.add("cardenteractive");
+				}
+
+				function getTotal(cards){ ///the parameter is set so both player deck and dealer deck can use this function to calculate
+					var total = 0;
+					let aceCount = 0;
+
+					for (let i=0; i < cards.length; i++){
+						if(cards[i].value == "J" || cards[i].value == "Q" || cards[i].value == "K"){
+							total = total + 10;
+						}
+						else if (cards[i].value == "A"){
+							total = total + 11;
+							aceCount = aceCount +1;
+						}
+						else{
+							total = total + Number(cards[i].value);
+						}
+					}
+
+					while (total > 21 && aceCount > 0) {
+						total = total - 10;
+						aceCount = aceCount - 1;
+					}
+
+					return total;
+				}
+
+				function hitCard(){
+					//block spamming
+					if (isAnimating) return;
+    				isAnimating = true;
+    				document.querySelector("#hit").disabled = true;
+    				document.querySelector("#stand").disabled = true;
+
+
+
+					var newPlayerCard = deck.pop(); ///take card from the full deck, full deck remove that card
+					playerdeck.push(newPlayerCard); ///add that card to player deck
+
+
+					///display new card on screen
+					var newPlayerCardPlacement = document.querySelector("#playercards");
+					displayCard(newPlayerCard, newPlayerCardPlacement);
+
+					///recalculate with getTotal function
+					var hitUpdateTotal = document.querySelector("#playertotal")
+					hitUpdateTotal.textContent = "Total: " + getTotal(playerdeck);
+
+					setTimeout(() => { ///timeout to prevent spamming
+						if (getTotal(playerdeck) > 21) {
+							setTimeout(() => {
+								revealDealerCard();
+								document.querySelector("#dealertotal").textContent = "Total: " + getTotal(dealerdeck);
+							}, 200);
+							setTimeout(() => { ///timeout before showing result
+								showResultImage(playerBustImage,"lose");
+								dealerWins = dealerWins + 1;
+								changeCredits(losecredit);
+								updateScore();
+								gameOver();
+								isAnimating = false;
+							}, 1900);
+						}
+						else{
+							isAnimating = false;
+							document.querySelector("#hit").disabled = false;
+							document.querySelector("#stand").disabled = false;
+						}					
+					}, 1000);
+
+				}
+
+				function standCard(){
+					document.querySelector("#hit").disabled = true;
+	    			document.querySelector("#stand").disabled = true;
+					var newDealerCardPlacement = document.querySelector("#dealercards"); ///put outside while loop because the code doesn't need to find this element every iteration.
+					var hitUpdateTotal = document.querySelector("#dealertotal")
+					
+					revealDealerCard();
+	    			document.querySelector("#dealertotal").textContent = "Total: " + getTotal(dealerdeck);
+
+					setTimeout(() => {
+						if(getTotal(dealerdeck) < 17){
+							var newDealerCard = deck.pop(); ///take card from the full deck, full deck remove that card
+							dealerdeck.push(newDealerCard); ///add that card to dealer deck
+							displayCard(newDealerCard, newDealerCardPlacement); 
+							hitUpdateTotal.textContent = "Total: " + getTotal(dealerdeck); ///recalculate with getTotal function
+
+							///timeout to mimick human speed, so the dealer doesn't look like it picks 2 cards at the same time
+							setTimeout(dealerPlay, 1000);
+						}
+						else{
+							setTimeout(checkWinner, 700);
+						}
+					}, 1200);
+				}
+
+				function revealDealerCard(){
+				    const dealerCards = document.querySelector("#dealercards").children;
+
+				    for (let i = 0; i < dealerCards.length; i++) {
+				        if (dealerCards[i].dataset.hidden === "true") {
+				            const card = dealerCards[i];
+
+				            card.classList.add("flipcard");
+
+				            // first half of flip
+				            card.style.transform = "rotateY(90deg)";
+
+				            setTimeout(() => {
+				                // swap image at midpoint
+				                card.src = card.dataset.realImage;
+				                card.dataset.hidden = "false";
+
+				                // second half of flip
+				                card.style.transform = "rotateY(0deg)";
+				            }, 350);
+
+				            break;
+				        }
+				    }
+				}
+
+				function dealerPlay(){
+					var newDealerCardPlacement = document.querySelector("#dealercards"); ///put outside while loop because the code doesn't need to find this element every iteration.
+					var hitUpdateTotal = document.querySelector("#dealertotal")
+					if(getTotal(dealerdeck) < 17){
+						var newDealerCard = deck.pop(); ///take card from the full deck, full deck remove that card
+						dealerdeck.push(newDealerCard); ///add that card to dealer deck
+						displayCard(newDealerCard, newDealerCardPlacement); 
+						hitUpdateTotal.textContent = "Total: " + getTotal(dealerdeck); ///recalculate with getTotal function
+
+						///timeout to mimick human speed, so the dealer doesn't look like it picks 2 cards at the same time
+						setTimeout(dealerPlay, 1000);
+					}
+					else{
+						setTimeout(checkWinner, 700);
+					}
+				}
+
+				function isBlackjack(cards){
+					if (cards.length == 2 && getTotal(cards) == 21){
+						return true;
+					}
+					else{
+						return false;
+					}
+				}
+
+				function checkBlackjackOnDeal() {
+					if (isBlackjack(playerdeck) && isBlackjack(dealerdeck)) {
+						showResultImage(tieImage,"tie");
+						ties = ties + 1;
+						changeCredits(tiecredit);
+						updateScore();
+						gameOver();
+					}
+					else if (isBlackjack(playerdeck)) {
+						showResultImage(blackjackPlayerImage,"win");
+						playerWins = playerWins + 1;
+						changeCredits(wincredit);
+						updateScore();
+						gameOver();
+					}
+					else if (isBlackjack(dealerdeck)) {
+						showResultImage(blackjackDealerImage,"lose");
+						dealerWins = dealerWins +1;
+						changeCredits(losecredit);
+						updateScore();
+						gameOver();
+					}
+				}
+
+				function checkWinner(){
+					var playerTotal = getTotal(playerdeck);
+					var dealerTotal = getTotal(dealerdeck);
+
+					if (dealerTotal > 21) {
+						showResultImage(dealerBustImage,"win");
+						playerWins = playerWins + 1;
+						changeCredits(wincredit);
+					}
+					else if (playerTotal > dealerTotal) {
+						showResultImage(playerWinsImage,"win");
+						playerWins = playerWins + 1;
+						changeCredits(wincredit);
+					}
+					else if (dealerTotal > playerTotal) {
+						showResultImage(dealerWinsImage,"lose");
+						dealerWins = dealerWins +1;
+						changeCredits(losecredit);
+					}
+					else {
+						showResultImage(tieImage,"tie");
+						ties = ties + 1;
+						changeCredits(tiecredit);
+						
+					}
+					updateScore();
+					gameOver();
+				}
+
+				function updateScore(){
+					var updateScoreBoard = document.querySelector("#scoreboard");
+					updateScoreBoard.textContent =
+						"Win: " + playerWins + "\n" +
+					 	"Loss: " + dealerWins + "\n" +
+					 	"Tie: " + ties;
+				}
+
+				function updateCredits(){
+				    var updateCreditsDisplay = document.querySelector("#creditsdisplay")
+				    updateCreditsDisplay.textContent = "CREDITS: " + credits;
+				    if (credits <= 0) {
+				    	document.querySelector("#startnewround").disabled = true;
+				    }
+				}
+
+				function resetScore(){
+					isAnimating = false;
+					gamesPlayed = 0;
+					playerWins = 0;
+					dealerWins = 0;
+					ties = 0;
+					playerdeck = [];
+					dealerdeck = [];
+					credits = originalcredits;
+					updateScore();
+					updateCredits();
+					clearResultImage();
+					document.querySelector("#startnewround").disabled = false;
+					document.querySelector("#playercards").innerHTML = "";
+					document.querySelector("#dealercards").innerHTML = "";
+					document.querySelector("#hit").disabled = true;
+					document.querySelector("#stand").disabled = true;
+					document.querySelector("#resetscore").disabled = true;
+					
+					var updatePlayerTotal = document.querySelector("#playertotal");
+					updatePlayerTotal.textContent = "";
+					var updateDealerTotal = document.querySelector("#dealertotal");
+					updateDealerTotal.textContent = "";
+
+				}
+
+				function gameOver(){
+					gamesPlayed = gamesPlayed + 1;
+					if (gamesPlayed > 0){
+						document.querySelector("#resetscore").disabled = false;
+					}
+					isAnimating = false;
+
+					if (credits > 0){
+				        document.querySelector("#startnewround").disabled = false;
+				    }
+				    document.querySelector("#hit").disabled = true;
+				    document.querySelector("#stand").disabled = true;
+				}
+
+				function gameStart(){
+					isAnimating = false;
+				    document.querySelector("#startnewround").disabled = false;
+				    document.querySelector("#hit").disabled = false;
+				    document.querySelector("#stand").disabled = false;
+				}
+
+
+				function shuffleAnimation() {
+				    const deckStack = document.querySelector("#deckstack");
+				    deckStack.classList.remove("shuffle");
+				    void deckStack.offsetWidth;
+				    deckStack.classList.add("shuffle");
+				}
+
+				function checkCredits(){
+				    if (credits <= 0) {
+				    	showResultImage(noCreditsImage,"lose");
+				        document.querySelector("#startnewround").disabled = true;
+				        return false;
+				    }
+				    return true;
+				}
+
+				function showResultImage(resultImageFile, glowType) {
+				    var resultBox = document.querySelector("#result");
+				    var resultImage = document.querySelector("#resultimage");
+
+				    resultImage.src = resultImageFile;
+
+				    // apply glow
+				    if (glowType === "win") {
+				        resultImage.style.filter = goldGlow;
+				    }
+				    else if (glowType === "lose") {
+				        resultImage.style.filter = redGlow;
+				    }
+				    else if (glowType === "tie") {
+				        resultImage.style.filter = silverGlow;
+				    }
+
+				    resultBox.classList.remove("show");
+				    void resultBox.offsetWidth;
+				    resultBox.classList.add("show");
+				}
+
+				function clearResultImage() {
+				    var resultBox = document.querySelector("#result");
+				    var resultImage = document.querySelector("#resultimage");
+
+				    resultBox.classList.remove("show");
+				    resultImage.src = "";
+				    resultImage.style.filter = "none";
+				}
+
+				function textWhenHover(){
+				    this.style.transform = "scale(1.05)";
+				    this.style.textShadow = "0 0 10px #E8D080";
+				}
+
+				function textReset(){
+				    this.style.transform = "scale(1)";
+				    this.style.textShadow = "none";
+				}
+
+            })();
